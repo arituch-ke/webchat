@@ -1,4 +1,5 @@
 import { messagingApi, type webhook } from "@line/bot-sdk";
+import { eq } from "drizzle-orm";
 
 import { contacts, messages, webhookEvents } from "@/db/schema";
 
@@ -40,6 +41,17 @@ export async function processWebhookEvents(
 
     const userId = event.source.userId;
     const message = event.message;
+    const [existingEvent] = await database
+      .select({ eventId: webhookEvents.eventId })
+      .from(webhookEvents)
+      .where(eq(webhookEvents.eventId, event.webhookEventId))
+      .limit(1);
+
+    if (existingEvent) {
+      ignored += 1;
+      continue;
+    }
+
     const profile = await lineClient.getProfile(userId);
     const sentAt = new Date(event.timestamp);
     const wasInserted = await database.transaction(async (transaction) => {

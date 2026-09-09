@@ -1,6 +1,6 @@
 # Webchat Inbox
 
-A Next.js and TypeScript shared inbox for receiving LINE Official Account webhook messages and replying to individual users.
+A Next.js and TypeScript operator inbox for receiving LINE Official Account webhook messages and replying to individual users. Customers chat in LINE; administrators use this web application to manage those conversations.
 
 ## Requirements
 
@@ -33,13 +33,12 @@ npm run build
 Copy `.env.example` to `.env.local`. Never commit real credentials.
 
 - `DATABASE_URL`: PostgreSQL connection string
+- `DEMO_MODE`: set to `true` only to preview sample data locally
 - `LINE_CHANNEL_SECRET`: verifies webhook signatures
 - `LINE_CHANNEL_ACCESS_TOKEN`: authorizes LINE Messaging API requests
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD`: protect the operator inbox
 
 The inbox and conversation APIs use HTTP Basic authentication. The LINE webhook remains public and relies on LINE signature verification instead.
-
-Implementation and deployment instructions will be added with their corresponding feature branches.
 
 ## LINE webhook
 

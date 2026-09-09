@@ -28,7 +28,9 @@ describe("POST /api/webhooks/line", () => {
     );
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: "Invalid signature" });
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid signature",
+    });
   });
 
   it("accepts a signed webhook verification request", async () => {
@@ -36,7 +38,8 @@ describe("POST /api/webhooks/line", () => {
     const body = JSON.stringify({ destination: "test", events: [] });
     process.env.LINE_CHANNEL_SECRET = secret;
     process.env.LINE_CHANNEL_ACCESS_TOKEN = "test-token";
-    process.env.DATABASE_URL = "postgres://user:password@localhost:5432/webchat";
+    process.env.DATABASE_URL =
+      "postgres://user:password@localhost:5432/webchat";
 
     const response = await POST(
       new Request("http://localhost/api/webhooks/line", {

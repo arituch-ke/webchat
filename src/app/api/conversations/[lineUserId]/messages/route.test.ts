@@ -10,7 +10,9 @@ describe("GET /api/conversations/:lineUserId/messages", () => {
     );
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({ error: "Invalid request" });
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid request",
+    });
   });
 
   it("rejects an invalid pagination limit", async () => {

@@ -2,7 +2,7 @@ import { messagingApi } from "@line/bot-sdk";
 import { eq } from "drizzle-orm";
 
 import { getDatabase } from "@/db/client";
-import { messages } from "@/db/schema";
+import { contacts, messages } from "@/db/schema";
 
 import { getLineConfig } from "./config";
 
@@ -11,13 +11,19 @@ export async function sendTextMessage(lineUserId: string, text: string) {
   const messageId = crypto.randomUUID();
   const sentAt = new Date();
 
-  await database.insert(messages).values({
-    id: messageId,
-    lineUserId,
-    direction: "outbound",
-    status: "pending",
-    text,
-    sentAt,
+  await database.transaction(async (transaction) => {
+    await transaction.insert(messages).values({
+      id: messageId,
+      lineUserId,
+      direction: "outbound",
+      status: "pending",
+      text,
+      sentAt,
+    });
+    await transaction
+      .update(contacts)
+      .set({ lastMessageAt: sentAt, updatedAt: sentAt })
+      .where(eq(contacts.lineUserId, lineUserId));
   });
 
   try {

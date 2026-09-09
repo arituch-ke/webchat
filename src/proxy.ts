@@ -18,7 +18,9 @@ export function proxy(request: NextRequest) {
     );
   }
 
-  if (!isAuthorized(request.headers.get("authorization"), { username, password })) {
+  if (
+    !isAuthorized(request.headers.get("authorization"), { username, password })
+  ) {
     return new Response("Authentication required", {
       status: 401,
       headers: { "WWW-Authenticate": 'Basic realm="Webchat Inbox"' },

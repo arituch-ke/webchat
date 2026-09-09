@@ -6,6 +6,9 @@ export async function GET() {
     return Response.json({ conversations });
   } catch (error) {
     console.error("Failed to load conversations", error);
-    return Response.json({ error: "Unable to load conversations" }, { status: 500 });
+    return Response.json(
+      { error: "Unable to load conversations" },
+      { status: 500 },
+    );
   }
 }
