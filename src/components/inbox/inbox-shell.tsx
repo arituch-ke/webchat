@@ -40,21 +40,29 @@ export function InboxShell({ initialConversations, initialMessages, liveMode }: 
   useEffect(() => {
     if (!liveMode) return;
     const controller = new AbortController();
-    fetch("/api/conversations", { signal: controller.signal })
-      .then(async (response) => {
+    const load = async () => {
+      try {
+        const response = await fetch("/api/conversations", {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error("Unable to load conversations");
-        return (await response.json()) as { conversations: ConversationSummary[] };
-      })
-      .then((data) => {
+        const data = (await response.json()) as {
+          conversations: ConversationSummary[];
+        };
         setConversations(data.conversations);
         setSelectedUserId((current) => data.conversations.some((item) => item.lineUserId === current) ? current : (data.conversations[0]?.lineUserId ?? null));
         setLoadError(false);
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setLoadError(true);
-      });
-    return () => controller.abort();
+      }
+    };
+    void load();
+    const interval = window.setInterval(load, 5000);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+    };
   }, [liveMode]);
 
   const visibleConversations = useMemo(() => {
