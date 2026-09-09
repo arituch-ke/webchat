@@ -3,15 +3,15 @@ import { NextResponse } from "next/server";
 
 import {
   ADMIN_SESSION_COOKIE,
+  getAdminAuthConfig,
   verifySessionToken,
 } from "@/lib/auth/admin-auth";
 
 export async function proxy(request: NextRequest) {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
+  const authConfig = getAdminAuthConfig();
   const isLoginPage = request.nextUrl.pathname === "/login";
 
-  if (!username || !password) {
+  if (!authConfig) {
     if (isLoginPage) return NextResponse.next();
     return Response.json(
       { error: "Admin access is not configured" },
@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
 
   const authenticated = await verifySessionToken(
     request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
-    { username, password },
+    authConfig,
   );
 
   if (isLoginPage) {
@@ -38,9 +38,7 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

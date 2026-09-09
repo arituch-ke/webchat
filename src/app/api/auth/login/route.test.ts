@@ -8,11 +8,13 @@ describe("POST /api/auth/login", () => {
   beforeEach(() => {
     process.env.ADMIN_USERNAME = "admin";
     process.env.ADMIN_PASSWORD = "correct-horse";
+    process.env.ADMIN_SESSION_SECRET = "0123456789abcdef0123456789abcdef";
   });
 
   afterEach(() => {
     delete process.env.ADMIN_USERNAME;
     delete process.env.ADMIN_PASSWORD;
+    delete process.env.ADMIN_SESSION_SECRET;
   });
 
   it("rejects incorrect credentials without setting a session", async () => {

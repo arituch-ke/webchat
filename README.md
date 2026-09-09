@@ -36,7 +36,10 @@ Copy `.env.example` to `.env.local`. Never commit real credentials.
 - `DEMO_MODE`: set to `true` only to preview sample data locally
 - `LINE_CHANNEL_SECRET`: verifies webhook signatures
 - `LINE_CHANNEL_ACCESS_TOKEN`: authorizes LINE Messaging API requests
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD`: protect the operator inbox
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD`: administrator credentials
+- `ADMIN_SESSION_SECRET`: a separate random secret used to sign administrator sessions
+
+Generate a session secret of at least 32 bytes with `openssl rand -base64 32`.
 
 The inbox and conversation APIs use a signed, HTTP-only administrator session. Sign in at `/login` with `ADMIN_USERNAME` and `ADMIN_PASSWORD`; use the inbox header to sign out. The LINE webhook remains public and relies on LINE signature verification instead.
 

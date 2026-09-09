@@ -7,21 +7,16 @@ import {
   LockKeyhole,
   UserRound,
 } from "lucide-react";
-import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-function safeDestination(value: string | null) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
-}
+import { SubmitEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError("");
@@ -45,7 +40,7 @@ export function LoginForm() {
         return;
       }
 
-      router.replace(safeDestination(searchParams.get("next")));
+      router.replace("/");
       router.refresh();
     } catch {
       setError("เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่อีกครั้ง");
