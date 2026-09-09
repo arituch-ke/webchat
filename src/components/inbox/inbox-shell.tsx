@@ -3,6 +3,9 @@
 import { Bell, ChevronDown, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { ChatWorkspace, type ChatMessage } from "./chat-workspace";
+import { InitialAvatar } from "./initial-avatar";
+
 export type ConversationSummary = {
   lineUserId: string;
   displayName: string;
@@ -16,6 +19,7 @@ export type ConversationSummary = {
 type InboxShellProps = {
   initialConversations: ConversationSummary[];
   liveMode: boolean;
+  initialMessages: Record<string, ChatMessage[]>;
 };
 
 function formatConversationTime(value: string) {
@@ -27,13 +31,9 @@ function formatConversationTime(value: string) {
   return new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short" }).format(date);
 }
 
-function InitialAvatar({ name }: { name: string }) {
-  return <span aria-hidden="true" className="initial-avatar">{name.trim().charAt(0)}</span>;
-}
-
-export function InboxShell({ initialConversations, liveMode }: InboxShellProps) {
+export function InboxShell({ initialConversations, initialMessages, liveMode }: InboxShellProps) {
   const [conversations, setConversations] = useState(initialConversations);
-  const [selectedUserId, setSelectedUserId] = useState(initialConversations[0]?.lineUserId ?? null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(initialConversations[0]?.lineUserId ?? null);
   const [query, setQuery] = useState("");
   const [loadError, setLoadError] = useState(false);
 
@@ -78,7 +78,7 @@ export function InboxShell({ initialConversations, liveMode }: InboxShellProps) 
         </div>
       </header>
 
-      <div className="inbox-body">
+      <div className="inbox-body" data-chat-open={Boolean(selectedConversation)}>
         <aside className="conversation-rail" aria-label="รายการบทสนทนา">
           <div className="search-wrap">
             <Search size={19} strokeWidth={1.8} aria-hidden="true" />
@@ -102,17 +102,11 @@ export function InboxShell({ initialConversations, liveMode }: InboxShellProps) 
           {visibleConversations.length === 0 ? <p className="rail-empty">ไม่พบผู้ใช้ที่ค้นหา</p> : null}
         </aside>
 
-        <section className="workspace" aria-label="พื้นที่สนทนา">
-          {selectedConversation ? (
-            <header className="chat-header">
-              <InitialAvatar name={selectedConversation.displayName} />
-              <div><h1>{selectedConversation.displayName}</h1><p><span className="connection-dot" />LINE user</p></div>
-            </header>
-          ) : (
-            <div className="workspace-empty"><h1>ยังไม่มีบทสนทนา</h1><p>เมื่อมีผู้ใช้ส่งข้อความหา LINE OA รายชื่อจะปรากฏที่นี่</p></div>
-          )}
-          {selectedConversation ? <div className="workspace-placeholder"><p>เลือกข้อความและตอบกลับได้จากพื้นที่นี้</p></div> : null}
-        </section>
+        {selectedConversation ? (
+          <ChatWorkspace key={selectedConversation.lineUserId} conversation={selectedConversation} initialMessages={initialMessages[selectedConversation.lineUserId] ?? []} liveMode={liveMode} onBack={() => setSelectedUserId(null)} />
+        ) : (
+          <section className="workspace workspace-empty" aria-label="พื้นที่สนทนา"><div><h1>ยังไม่มีบทสนทนา</h1><p>เมื่อมีผู้ใช้ส่งข้อความหา LINE OA รายชื่อจะปรากฏที่นี่</p></div></section>
+        )}
       </div>
     </main>
   );
