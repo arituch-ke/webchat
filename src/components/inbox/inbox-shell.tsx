@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { ChatWorkspace, type ChatMessage } from "./chat-workspace";
@@ -117,6 +117,16 @@ export function InboxShell({
         <div className="operator-controls">
           <span className="operator-avatar">AR</span>
           <span className="operator-name">Admin</span>
+          <form action="/api/auth/logout" method="post">
+            <button
+              className="logout-button"
+              type="submit"
+              aria-label="ออกจากระบบ"
+            >
+              <LogOut size={18} />
+              <span>ออกจากระบบ</span>
+            </button>
+          </form>
         </div>
       </header>
 

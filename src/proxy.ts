@@ -1,9 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { isAuthorized } from "@/lib/auth/basic-auth";
+import {
+  ADMIN_SESSION_COOKIE,
+  verifySessionToken,
+} from "@/lib/auth/admin-auth";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const username = process.env.ADMIN_USERNAME;
   const password = process.env.ADMIN_PASSWORD;
 
@@ -18,13 +21,22 @@ export function proxy(request: NextRequest) {
     );
   }
 
-  if (
-    !isAuthorized(request.headers.get("authorization"), { username, password })
-  ) {
-    return new Response("Authentication required", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Webchat Inbox"' },
-    });
+  const authenticated = await verifySessionToken(
+    request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
+    { username, password },
+  );
+
+  if (!authenticated) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return Response.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
