@@ -43,10 +43,30 @@ Implementation and deployment instructions will be added with their correspondin
 
 ## LINE webhook
 
-Apply `db/0001_initial.sql` to the PostgreSQL database, then configure the LINE Developers Console webhook URL as:
+Apply the SQL migrations in filename order, then configure the LINE Developers Console webhook URL as:
 
 ```text
 https://<deployment-domain>/api/webhooks/line
 ```
 
 The endpoint verifies `x-line-signature`, ignores unsupported event types, and deduplicates webhook redelivery using `webhookEventId`.
+
+## Deployment checklist
+
+1. Create a PostgreSQL database and apply the files in `db/` in filename order.
+2. Import the GitHub repository into Vercel.
+3. Add every variable from `.env.example` to the Vercel project. Use strong, unique admin credentials.
+4. Deploy the application and copy its HTTPS domain.
+5. Set the LINE Messaging API webhook URL to `https://<domain>/api/webhooks/line`.
+6. Enable webhooks and webhook redelivery in the LINE Developers Console.
+7. Add the LINE OA as a friend, send a text message, and confirm the user appears in the inbox.
+8. Select the user in the inbox and verify a reply arrives in LINE.
+
+Do not enable LINE's automatic greeting or auto-response during the round-trip test unless that behavior is intentionally part of the test account.
+
+## Submission checklist
+
+- LINE OA URL used for testing
+- Deployed Webchat Inbox URL
+- Public GitHub repository URL
+- A clean run of lint, type checking, tests, and production build
