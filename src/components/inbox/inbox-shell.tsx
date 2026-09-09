@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut, Search } from "lucide-react";
+import { LogOut, MessageCircle, Search, SearchX } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { ChatWorkspace, type ChatMessage } from "./chat-workspace";
@@ -41,7 +42,7 @@ function formatConversationTime(value: string) {
 
 const connectionCopy: Record<ConnectionState, string> = {
   demo: "ข้อมูลตัวอย่าง",
-  ready: "ตั้งค่า LINE แล้ว",
+  ready: "Connected LINE OA",
   misconfigured: "ตั้งค่าระบบไม่ครบ",
 };
 
@@ -52,9 +53,7 @@ export function InboxShell({
   liveMode,
 }: InboxShellProps) {
   const [conversations, setConversations] = useState(initialConversations);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(
-    initialConversations[0]?.lineUserId ?? null,
-  );
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loadError, setLoadError] = useState(false);
 
@@ -74,7 +73,7 @@ export function InboxShell({
         setSelectedUserId((current) =>
           data.conversations.some((item) => item.lineUserId === current)
             ? current
-            : (data.conversations[0]?.lineUserId ?? null),
+            : null,
         );
         setLoadError(false);
       } catch (error: unknown) {
@@ -130,7 +129,17 @@ export function InboxShell({
     <main className="inbox-app">
       <header className="topbar">
         <div className="brand-lockup">
-          <span className="brand-name">Webchat Inbox</span>
+          <span className="brand-identity">
+            <Image
+              className="brand-logo"
+              src="/webchat-logo.png"
+              alt=""
+              width={36}
+              height={36}
+              priority
+            />
+            <span className="brand-name">Webchat Inbox</span>
+          </span>
           <span className="connection-label" data-state={connectionState}>
             <span className="connection-dot" />
             {connectionCopy[connectionState]}
@@ -172,51 +181,66 @@ export function InboxShell({
             </p>
           ) : null}
           <div className="conversation-list">
-            {visibleConversations.map((conversation) => {
-              const selected = conversation.lineUserId === selectedUserId;
-              return (
-                <button
-                  key={conversation.lineUserId}
-                  type="button"
-                  className="conversation-row"
-                  data-selected={selected}
-                  onClick={() => setSelectedUserId(conversation.lineUserId)}
-                  aria-pressed={selected}
-                >
-                  <InitialAvatar
-                    name={conversation.displayName}
-                    pictureUrl={conversation.pictureUrl}
-                  />
-                  <span className="conversation-copy">
-                    <span className="conversation-line">
-                      <strong>{conversation.displayName}</strong>
-                      <time dateTime={conversation.lastMessageAt}>
-                        {formatConversationTime(conversation.lastMessageAt)}
-                      </time>
-                    </span>
-                    <span className="conversation-line preview-line">
-                      <span>
-                        {conversation.latestMessage ?? "เริ่มบทสนทนาใหม่"}
+            {visibleConversations.length > 0 ? (
+              visibleConversations.map((conversation) => {
+                const selected = conversation.lineUserId === selectedUserId;
+                return (
+                  <button
+                    key={conversation.lineUserId}
+                    type="button"
+                    className="conversation-row"
+                    data-selected={selected}
+                    onClick={() => setSelectedUserId(conversation.lineUserId)}
+                    aria-pressed={selected}
+                  >
+                    <InitialAvatar
+                      name={conversation.displayName}
+                      pictureUrl={conversation.pictureUrl}
+                    />
+                    <span className="conversation-copy">
+                      <span className="conversation-line">
+                        <strong>{conversation.displayName}</strong>
+                        <time dateTime={conversation.lastMessageAt}>
+                          {formatConversationTime(conversation.lastMessageAt)}
+                        </time>
                       </span>
-                      {conversation.unreadCount > 0 ? (
-                        <span
-                          className="unread-count"
-                          aria-label={`${conversation.unreadCount} ข้อความที่ยังไม่ได้อ่าน`}
-                        >
-                          {conversation.unreadCount > 99
-                            ? "99+"
-                            : conversation.unreadCount}
+                      <span className="conversation-line preview-line">
+                        <span>
+                          {conversation.latestMessage ?? "เริ่มบทสนทนาใหม่"}
                         </span>
-                      ) : null}
+                        {conversation.unreadCount > 0 ? (
+                          <span
+                            className="unread-count"
+                            aria-label={`${conversation.unreadCount} ข้อความที่ยังไม่ได้อ่าน`}
+                          >
+                            {conversation.unreadCount > 99
+                              ? "99+"
+                              : conversation.unreadCount}
+                          </span>
+                        ) : null}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="rail-empty" role="status">
+                {query.trim() ? (
+                  <>
+                    <SearchX size={26} aria-hidden="true" />
+                    <strong>ไม่พบผู้ใช้</strong>
+                    <span>ลองค้นหาด้วยชื่ออื่น</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle size={26} aria-hidden="true" />
+                    <strong>ยังไม่มีผู้ใช้</strong>
+                    <span>เมื่อมีคนทัก LINE OA รายชื่อจะปรากฏที่นี่</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
-          {visibleConversations.length === 0 ? (
-            <p className="rail-empty">ไม่พบผู้ใช้ที่ค้นหา</p>
-          ) : null}
         </aside>
 
         {selectedConversation ? (
@@ -238,12 +262,16 @@ export function InboxShell({
               <h1>
                 {connectionState === "misconfigured"
                   ? "ตั้งค่าระบบไม่ครบ"
-                  : "ยังไม่มีบทสนทนา"}
+                  : conversations.length > 0
+                    ? "เลือกบทสนทนา"
+                    : "ยังไม่มีบทสนทนา"}
               </h1>
               <p>
                 {connectionState === "misconfigured"
                   ? "กรอกค่าฐานข้อมูลและ LINE Messaging API ในไฟล์ environment แล้วเปิดระบบใหม่"
-                  : "เมื่อมีผู้ใช้ส่งข้อความหา LINE OA รายชื่อจะปรากฏที่นี่"}
+                  : conversations.length > 0
+                    ? "เลือกผู้ใช้จากรายการเพื่อดูและตอบข้อความ"
+                    : "เมื่อมีผู้ใช้ส่งข้อความหา LINE OA รายชื่อจะปรากฏที่นี่"}
               </p>
             </div>
           </section>

@@ -15,20 +15,33 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    username: "",
+    password: "",
+  });
 
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
+    const username = String(form.get("username") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    const validationErrors = {
+      username: username ? "" : "กรุณากรอกชื่อผู้ใช้",
+      password: password ? "" : "กรุณากรอกรหัสผ่าน",
+    };
+    setFieldErrors(validationErrors);
+    if (validationErrors.username || validationErrors.password) return;
+
+    setSubmitting(true);
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          username: form.get("username"),
-          password: form.get("password"),
+          username,
+          password,
         }),
       });
       if (!response.ok) {
@@ -50,9 +63,9 @@ export function LoginForm() {
   }
 
   return (
-    <form className="login-form" onSubmit={submit}>
+    <form className="login-form" onSubmit={submit} noValidate>
       <label htmlFor="username">ชื่อผู้ใช้</label>
-      <div className="login-field">
+      <div className="login-field" data-invalid={Boolean(fieldErrors.username)}>
         <UserRound size={19} aria-hidden="true" />
         <input
           id="username"
@@ -60,13 +73,23 @@ export function LoginForm() {
           type="text"
           autoComplete="username"
           placeholder="กรอกชื่อผู้ใช้"
+          aria-invalid={Boolean(fieldErrors.username)}
+          aria-describedby={fieldErrors.username ? "username-error" : undefined}
+          onChange={() =>
+            setFieldErrors((current) => ({ ...current, username: "" }))
+          }
           required
           autoFocus
         />
       </div>
+      {fieldErrors.username ? (
+        <p className="field-error" id="username-error" role="alert">
+          {fieldErrors.username}
+        </p>
+      ) : null}
 
       <label htmlFor="password">รหัสผ่าน</label>
-      <div className="login-field">
+      <div className="login-field" data-invalid={Boolean(fieldErrors.password)}>
         <LockKeyhole size={19} aria-hidden="true" />
         <input
           id="password"
@@ -74,6 +97,11 @@ export function LoginForm() {
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
           placeholder="กรอกรหัสผ่าน"
+          aria-invalid={Boolean(fieldErrors.password)}
+          aria-describedby={fieldErrors.password ? "password-error" : undefined}
+          onChange={() =>
+            setFieldErrors((current) => ({ ...current, password: "" }))
+          }
           required
         />
         <button
@@ -85,6 +113,11 @@ export function LoginForm() {
           {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
         </button>
       </div>
+      {fieldErrors.password ? (
+        <p className="field-error" id="password-error" role="alert">
+          {fieldErrors.password}
+        </p>
+      ) : null}
 
       <p className="login-error" role="alert" aria-live="polite">
         {error}
