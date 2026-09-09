@@ -1,5 +1,5 @@
 import { messagingApi, type webhook } from "@line/bot-sdk";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { contacts, messages, webhookEvents } from "@/db/schema";
 
@@ -72,6 +72,7 @@ export async function processWebhookEvents(
           displayName: profile.displayName,
           pictureUrl: profile.pictureUrl,
           lastMessageAt: sentAt,
+          unreadCount: 1,
         })
         .onConflictDoUpdate({
           target: contacts.lineUserId,
@@ -79,6 +80,7 @@ export async function processWebhookEvents(
             displayName: profile.displayName,
             pictureUrl: profile.pictureUrl,
             lastMessageAt: sentAt,
+            unreadCount: sql`${contacts.unreadCount} + 1`,
             updatedAt: new Date(),
           },
         });

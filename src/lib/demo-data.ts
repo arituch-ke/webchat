@@ -11,6 +11,7 @@ export const demoConversations: ConversationSummary[] = [
     lastMessageAt: new Date(now - 2 * 60_000).toISOString(),
     latestMessage: "ขอสอบถามข้อมูลครับ",
     latestDirection: "inbound",
+    unreadCount: 0,
   },
   {
     lineUserId: "U00000000000000000000000000000002",
@@ -19,7 +20,7 @@ export const demoConversations: ConversationSummary[] = [
     lastMessageAt: new Date(now - 49 * 60_000).toISOString(),
     latestMessage: "สวัสดีค่ะ ยินดีให้บริการ",
     latestDirection: "outbound",
-    unread: true,
+    unreadCount: 2,
   },
   {
     lineUserId: "U00000000000000000000000000000003",
@@ -28,6 +29,7 @@ export const demoConversations: ConversationSummary[] = [
     lastMessageAt: new Date(now - 24 * 60 * 60_000).toISOString(),
     latestMessage: "มีสินค้านี้ไหมครับ",
     latestDirection: "inbound",
+    unreadCount: 1,
   },
   {
     lineUserId: "U00000000000000000000000000000004",
@@ -36,6 +38,7 @@ export const demoConversations: ConversationSummary[] = [
     lastMessageAt: new Date(now - 3 * 24 * 60 * 60_000).toISOString(),
     latestMessage: "สอบถามเรื่องการจัดส่งค่ะ",
     latestDirection: "inbound",
+    unreadCount: 0,
   },
 ];
 
