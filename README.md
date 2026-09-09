@@ -4,13 +4,6 @@ A Next.js and TypeScript operator inbox for receiving LINE Official Account webh
 
 Live demo: [webchat-livid-nine.vercel.app](https://webchat-livid-nine.vercel.app/)
 
-## Requirements
-
-- Node.js 20.9 or newer
-- npm
-- PostgreSQL database
-- LINE Official Account with a Messaging API channel
-
 ## Local development
 
 ```bash
@@ -54,23 +47,3 @@ https://<deployment-domain>/api/webhooks/line
 ```
 
 The endpoint verifies `x-line-signature`, ignores unsupported event types, and deduplicates webhook redelivery using `webhookEventId`.
-
-## Deployment checklist
-
-1. Create a PostgreSQL database and apply the files in `db/` in filename order.
-2. Import the GitHub repository into Vercel.
-3. Add every variable from `.env.example` to the Vercel project. Use strong, unique admin credentials.
-4. Deploy the application and copy its HTTPS domain.
-5. Set the LINE Messaging API webhook URL to `https://<domain>/api/webhooks/line`.
-6. Enable webhooks and webhook redelivery in the LINE Developers Console.
-7. Add the LINE OA as a friend, send a text message, and confirm the user appears in the inbox.
-8. Select the user in the inbox and verify a reply arrives in LINE.
-
-Do not enable LINE's automatic greeting or auto-response during the round-trip test unless that behavior is intentionally part of the test account.
-
-## Submission checklist
-
-- LINE OA URL used for testing
-- Deployed Webchat Inbox URL
-- Public GitHub repository URL
-- A clean run of lint, type checking, tests, and production build
