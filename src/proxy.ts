@@ -9,12 +9,10 @@ import {
 export async function proxy(request: NextRequest) {
   const username = process.env.ADMIN_USERNAME;
   const password = process.env.ADMIN_PASSWORD;
-
-  if (!username && !password && process.env.NODE_ENV !== "production") {
-    return NextResponse.next();
-  }
+  const isLoginPage = request.nextUrl.pathname === "/login";
 
   if (!username || !password) {
+    if (isLoginPage) return NextResponse.next();
     return Response.json(
       { error: "Admin access is not configured" },
       { status: 503 },
@@ -25,6 +23,12 @@ export async function proxy(request: NextRequest) {
     request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
     { username, password },
   );
+
+  if (isLoginPage) {
+    return authenticated
+      ? NextResponse.redirect(new URL("/", request.url))
+      : NextResponse.next();
+  }
 
   if (!authenticated) {
     if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -43,5 +47,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/api/conversations/:path*"],
+  matcher: ["/", "/login", "/api/conversations/:path*"],
 };

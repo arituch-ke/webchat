@@ -50,4 +50,28 @@ describe("admin proxy", () => {
     const response = await proxy(request);
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
+
+  it("allows unauthenticated users to open login", async () => {
+    const response = await proxy(new NextRequest("http://localhost/login"));
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("redirects authenticated users away from login", async () => {
+    const token = await createSessionToken(credentials);
+    const request = new NextRequest("http://localhost/login", {
+      headers: { cookie: `${ADMIN_SESSION_COOKIE}=${token}` },
+    });
+
+    const response = await proxy(request);
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost/");
+  });
+
+  it("does not bypass the protected page when admin access is unconfigured", async () => {
+    delete process.env.ADMIN_USERNAME;
+    delete process.env.ADMIN_PASSWORD;
+
+    const response = await proxy(new NextRequest("http://localhost/"));
+    expect(response.status).toBe(503);
+  });
 });
