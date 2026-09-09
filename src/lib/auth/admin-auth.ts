@@ -6,6 +6,10 @@ type AdminCredentials = {
   password: string;
 };
 
+export type AdminAuthConfig = AdminCredentials & {
+  sessionSecret: string;
+};
+
 type SessionPayload = {
   subject: string;
   expiresAt: number;
@@ -61,6 +65,30 @@ async function safeEquals(actual: string, expected: string) {
   return difference === 0;
 }
 
+export function getAdminAuthConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AdminAuthConfig | null {
+  const username = environment.ADMIN_USERNAME;
+  const password = environment.ADMIN_PASSWORD;
+  const sessionSecret = environment.ADMIN_SESSION_SECRET;
+  const hasStrongSessionSecret =
+    sessionSecret && new TextEncoder().encode(sessionSecret).length >= 32;
+  return username && password && hasStrongSessionSecret
+    ? { username, password, sessionSecret }
+    : null;
+}
+
+export function getAdminSessionCookieOptions(
+  environment: Record<string, string | undefined> = process.env,
+) {
+  return {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax" as const,
+    secure: environment.NODE_ENV === "production",
+  };
+}
+
 export async function credentialsMatch(
   supplied: AdminCredentials,
   expected: AdminCredentials,
@@ -73,20 +101,20 @@ export async function credentialsMatch(
 }
 
 export async function createSessionToken(
-  credentials: AdminCredentials,
+  config: Pick<AdminAuthConfig, "username" | "sessionSecret">,
   now = Date.now(),
 ) {
   const payload: SessionPayload = {
-    subject: credentials.username,
+    subject: config.username,
     expiresAt: now + ADMIN_SESSION_DURATION_SECONDS * 1000,
   };
   const encodedPayload = encode(JSON.stringify(payload));
-  return `${encodedPayload}.${await sign(encodedPayload, credentials.password)}`;
+  return `${encodedPayload}.${await sign(encodedPayload, config.sessionSecret)}`;
 }
 
 export async function verifySessionToken(
   token: string | undefined,
-  credentials: AdminCredentials,
+  config: Pick<AdminAuthConfig, "username" | "sessionSecret">,
   now = Date.now(),
 ) {
   if (!token) return false;
@@ -94,12 +122,12 @@ export async function verifySessionToken(
   if (!encodedPayload || !suppliedSignature || extra) return false;
 
   try {
-    const expectedSignature = await sign(encodedPayload, credentials.password);
+    const expectedSignature = await sign(encodedPayload, config.sessionSecret);
     if (!(await safeEquals(suppliedSignature, expectedSignature))) return false;
 
     const payload = JSON.parse(decode(encodedPayload)) as SessionPayload;
     return (
-      payload.subject === credentials.username &&
+      payload.subject === config.username &&
       Number.isFinite(payload.expiresAt) &&
       payload.expiresAt > now
     );

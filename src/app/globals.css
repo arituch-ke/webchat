@@ -67,6 +67,8 @@ input:focus-visible {
 }
 .connection-label,
 .chat-header p {
+  display: flex;
+  align-items: center;
   color: var(--text-muted);
   font-size: 14px;
 }
@@ -78,8 +80,10 @@ input:focus-visible {
   box-shadow: 0 0 0 4px #fae9e6;
 }
 .connection-dot {
+  display: block;
   width: 9px;
   height: 9px;
+  flex: 0 0 auto;
   margin-right: 8px;
   border-radius: 50%;
   background: var(--accent);

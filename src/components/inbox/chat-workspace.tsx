@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, CheckCheck, SendHorizontal } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { SubmitEvent, useEffect, useRef, useState } from "react";
 
 import type { ConversationSummary } from "./inbox-shell";
 import { InitialAvatar } from "./initial-avatar";
@@ -70,7 +70,7 @@ export function ChatWorkspace({
       active = false;
       window.clearInterval(interval);
     };
-  }, [conversation.lineUserId, initialMessages, liveMode]);
+  }, [conversation.lineUserId, liveMode]);
 
   useEffect(() => {
     if (typeof timelineRef.current?.scrollTo === "function") {
@@ -81,7 +81,7 @@ export function ChatWorkspace({
     }
   }, [messages]);
 
-  async function submitMessage(event: FormEvent<HTMLFormElement>) {
+  async function submitMessage(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = draft.trim();
     if (!text) return;

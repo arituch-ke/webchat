@@ -3,18 +3,16 @@ import { NextResponse } from "next/server";
 
 import {
   ADMIN_SESSION_COOKIE,
+  getAdminAuthConfig,
   verifySessionToken,
 } from "@/lib/auth/admin-auth";
 
 export async function proxy(request: NextRequest) {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
+  const authConfig = getAdminAuthConfig();
+  const isLoginPage = request.nextUrl.pathname === "/login";
 
-  if (!username && !password && process.env.NODE_ENV !== "production") {
-    return NextResponse.next();
-  }
-
-  if (!username || !password) {
+  if (!authConfig) {
+    if (isLoginPage) return NextResponse.next();
     return Response.json(
       { error: "Admin access is not configured" },
       { status: 503 },
@@ -23,8 +21,14 @@ export async function proxy(request: NextRequest) {
 
   const authenticated = await verifySessionToken(
     request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
-    { username, password },
+    authConfig,
   );
+
+  if (isLoginPage) {
+    return authenticated
+      ? NextResponse.redirect(new URL("/", request.url))
+      : NextResponse.next();
+  }
 
   if (!authenticated) {
     if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -34,14 +38,12 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/api/conversations/:path*"],
+  matcher: ["/", "/login", "/api/conversations/:path*"],
 };

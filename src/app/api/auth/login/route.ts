@@ -6,6 +6,8 @@ import {
   ADMIN_SESSION_DURATION_SECONDS,
   createSessionToken,
   credentialsMatch,
+  getAdminAuthConfig,
+  getAdminSessionCookieOptions,
 } from "@/lib/auth/admin-auth";
 
 const loginSchema = z.object({
@@ -14,9 +16,8 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!username || !password) {
+  const authConfig = getAdminAuthConfig();
+  if (!authConfig) {
     return Response.json(
       { error: "Admin access is not configured" },
       { status: 503 },
@@ -29,21 +30,17 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  const expected = { username, password };
-  if (!(await credentialsMatch(parsed.data, expected))) {
+  if (!(await credentialsMatch(parsed.data, authConfig))) {
     return Response.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
   const response = NextResponse.json({ ok: true });
   response.cookies.set(
     ADMIN_SESSION_COOKIE,
-    await createSessionToken(expected),
+    await createSessionToken(authConfig),
     {
-      httpOnly: true,
+      ...getAdminSessionCookieOptions(),
       maxAge: ADMIN_SESSION_DURATION_SECONDS,
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
     },
   );
   return response;
