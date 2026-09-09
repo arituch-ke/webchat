@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GET } from "./route";
+import { GET, POST } from "./route";
 
 describe("GET /api/conversations/:lineUserId/messages", () => {
   it("rejects an invalid LINE user ID before accessing the database", async () => {
@@ -17,6 +17,44 @@ describe("GET /api/conversations/:lineUserId/messages", () => {
     const response = await GET(
       new Request(
         "http://localhost/api/conversations/U0123456789abcdef0123456789abcdef/messages?limit=101",
+      ),
+      {
+        params: Promise.resolve({
+          lineUserId: "U0123456789abcdef0123456789abcdef",
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+  });
+});
+
+describe("POST /api/conversations/:lineUserId/messages", () => {
+  it("rejects an empty message before accessing the database", async () => {
+    const response = await POST(
+      new Request(
+        "http://localhost/api/conversations/U0123456789abcdef0123456789abcdef/messages",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text: "   " }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          lineUserId: "U0123456789abcdef0123456789abcdef",
+        }),
+      },
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects malformed JSON", async () => {
+    const response = await POST(
+      new Request(
+        "http://localhost/api/conversations/U0123456789abcdef0123456789abcdef/messages",
+        { method: "POST", body: "{" },
       ),
       {
         params: Promise.resolve({

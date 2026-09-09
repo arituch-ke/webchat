@@ -10,6 +10,7 @@ export async function listConversations() {
       lineUserId: messages.lineUserId,
       text: messages.text,
       direction: messages.direction,
+      status: messages.status,
       sentAt: messages.sentAt,
     })
     .from(messages)
@@ -50,7 +51,9 @@ export async function listMessages({
       id: messages.id,
       lineMessageId: messages.lineMessageId,
       direction: messages.direction,
+      status: messages.status,
       text: messages.text,
+      errorMessage: messages.errorMessage,
       sentAt: messages.sentAt,
     })
     .from(messages)

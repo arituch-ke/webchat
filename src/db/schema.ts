@@ -10,6 +10,11 @@ export const messageDirection = pgEnum("message_direction", [
   "inbound",
   "outbound",
 ]);
+export const messageStatus = pgEnum("message_status", [
+  "pending",
+  "sent",
+  "failed",
+]);
 
 export const contacts = pgTable(
   "contacts",
@@ -46,7 +51,9 @@ export const messages = pgTable(
       .references(() => contacts.lineUserId, { onDelete: "cascade" }),
     lineMessageId: text("line_message_id").unique(),
     direction: messageDirection("direction").notNull(),
+    status: messageStatus("status").notNull().default("sent"),
     text: text("text").notNull(),
+    errorMessage: text("error_message"),
     sentAt: timestamp("sent_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
