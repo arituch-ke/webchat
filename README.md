@@ -38,7 +38,7 @@ Copy `.env.example` to `.env.local`. Never commit real credentials.
 - `LINE_CHANNEL_ACCESS_TOKEN`: authorizes LINE Messaging API requests
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD`: protect the operator inbox
 
-The inbox and conversation APIs use HTTP Basic authentication. The LINE webhook remains public and relies on LINE signature verification instead.
+The inbox and conversation APIs use a signed, HTTP-only administrator session. Sign in at `/login` with `ADMIN_USERNAME` and `ADMIN_PASSWORD`; use the inbox header to sign out. The LINE webhook remains public and relies on LINE signature verification instead.
 
 ## LINE webhook
 
