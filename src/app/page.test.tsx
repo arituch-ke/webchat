@@ -4,11 +4,13 @@ import { describe, expect, it } from "vitest";
 import Home from "./page";
 
 describe("Home", () => {
-  it("identifies the application", () => {
+  it("renders the inbox navigation", () => {
     render(<Home />);
 
     expect(
-      screen.getByRole("heading", { name: "Webchat Inbox" }),
+      screen.getByText("Webchat Inbox"),
     ).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "ค้นหาผู้ใช้" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /สมชาย ใจดี/ })).toBeInTheDocument();
   });
 });
