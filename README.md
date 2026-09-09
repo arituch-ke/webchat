@@ -38,3 +38,13 @@ Copy `.env.example` to `.env.local`. Never commit real credentials.
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD`: protect the operator inbox
 
 Implementation and deployment instructions will be added with their corresponding feature branches.
+
+## LINE webhook
+
+Apply `db/0001_initial.sql` to the PostgreSQL database, then configure the LINE Developers Console webhook URL as:
+
+```text
+https://<deployment-domain>/api/webhooks/line
+```
+
+The endpoint verifies `x-line-signature`, ignores unsupported event types, and deduplicates webhook redelivery using `webhookEventId`.
