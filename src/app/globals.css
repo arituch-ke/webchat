@@ -248,12 +248,20 @@ input:focus-visible {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.unread-dot {
-  width: 10px;
-  height: 10px;
+.unread-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
   flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--accent);
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 .rail-notice,
 .rail-empty {

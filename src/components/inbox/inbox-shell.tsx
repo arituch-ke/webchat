@@ -14,7 +14,7 @@ export type ConversationSummary = {
   lastMessageAt: string;
   latestMessage: string | null;
   latestDirection: "inbound" | "outbound" | null;
-  unread?: boolean;
+  unreadCount: number;
 };
 
 type InboxShellProps = {
@@ -84,7 +84,7 @@ export function InboxShell({
       }
     };
     void load();
-    const interval = window.setInterval(load, 5000);
+    const interval = window.setInterval(load, 1000);
     return () => {
       controller.abort();
       window.clearInterval(interval);
@@ -103,6 +103,28 @@ export function InboxShell({
   const selectedConversation = conversations.find(
     (conversation) => conversation.lineUserId === selectedUserId,
   );
+
+  useEffect(() => {
+    if (!liveMode || !selectedConversation?.unreadCount) return;
+
+    const lineUserId = selectedConversation.lineUserId;
+    void fetch(`/api/conversations/${lineUserId}`, { method: "PATCH" }).then(
+      (response) => {
+        if (!response.ok) {
+          setLoadError(true);
+          return;
+        }
+        setConversations((current) =>
+          current.map((conversation) =>
+            conversation.lineUserId === lineUserId
+              ? { ...conversation, unreadCount: 0 }
+              : conversation,
+          ),
+        );
+      },
+      () => setLoadError(true),
+    );
+  }, [liveMode, selectedConversation]);
 
   return (
     <main className="inbox-app">
@@ -176,11 +198,15 @@ export function InboxShell({
                       <span>
                         {conversation.latestMessage ?? "เริ่มบทสนทนาใหม่"}
                       </span>
-                      {conversation.unread ? (
+                      {conversation.unreadCount > 0 ? (
                         <span
-                          className="unread-dot"
-                          aria-label="ยังไม่ได้อ่าน"
-                        />
+                          className="unread-count"
+                          aria-label={`${conversation.unreadCount} ข้อความที่ยังไม่ได้อ่าน`}
+                        >
+                          {conversation.unreadCount > 99
+                            ? "99+"
+                            : conversation.unreadCount}
+                        </span>
                       ) : null}
                     </span>
                   </span>

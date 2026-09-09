@@ -19,5 +19,8 @@ describe("Home", () => {
     expect(
       screen.getByRole("button", { name: /สมชาย ใจดี/ }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("2 ข้อความที่ยังไม่ได้อ่าน"),
+    ).toHaveTextContent("2");
   });
 });

@@ -72,7 +72,7 @@ export function ChatWorkspace({
       }
     };
     void load();
-    const interval = window.setInterval(load, 4000);
+    const interval = window.setInterval(load, 1000);
     return () => {
       active = false;
       window.clearInterval(interval);

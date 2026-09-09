@@ -1,4 +1,13 @@
-import { index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const messageDirection = pgEnum("message_direction", [
   "inbound",
@@ -16,6 +25,7 @@ export const contacts = pgTable(
     lineUserId: text("line_user_id").primaryKey(),
     displayName: text("display_name").notNull(),
     pictureUrl: text("picture_url"),
+    unreadCount: integer("unread_count").notNull().default(0),
     lastMessageAt: timestamp("last_message_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -26,7 +36,10 @@ export const contacts = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index("contacts_last_message_at_idx").on(table.lastMessageAt)],
+  (table) => [
+    index("contacts_last_message_at_idx").on(table.lastMessageAt),
+    check("contacts_unread_count_check", sql`${table.unreadCount} >= 0`),
+  ],
 );
 
 export const webhookEvents = pgTable("webhook_events", {

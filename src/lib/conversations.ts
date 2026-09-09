@@ -22,6 +22,7 @@ export async function listConversations() {
       lineUserId: contacts.lineUserId,
       displayName: contacts.displayName,
       pictureUrl: contacts.pictureUrl,
+      unreadCount: contacts.unreadCount,
       lastMessageAt: contacts.lastMessageAt,
       latestMessage: latestMessage.text,
       latestDirection: latestMessage.direction,
@@ -29,6 +30,16 @@ export async function listConversations() {
     .from(contacts)
     .leftJoin(latestMessage, eq(contacts.lineUserId, latestMessage.lineUserId))
     .orderBy(desc(contacts.lastMessageAt));
+}
+
+export async function markConversationRead(lineUserId: string) {
+  const updated = await getDatabase()
+    .update(contacts)
+    .set({ unreadCount: 0 })
+    .where(eq(contacts.lineUserId, lineUserId))
+    .returning({ lineUserId: contacts.lineUserId });
+
+  return updated.length > 0;
 }
 
 type ListMessagesOptions = {
