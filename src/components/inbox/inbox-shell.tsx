@@ -115,7 +115,6 @@ export function InboxShell({
           </span>
         </div>
         <div className="operator-controls">
-          <span className="operator-avatar">AR</span>
           <span className="operator-name">Admin</span>
           <form action="/api/auth/logout" method="post">
             <button
