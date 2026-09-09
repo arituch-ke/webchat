@@ -41,18 +41,25 @@ export function ChatWorkspace({
   const [loading, setLoading] = useState(liveMode);
   const [loadError, setLoadError] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const pendingSendsRef = useRef(0);
+  const messageRevisionRef = useRef(0);
 
   useEffect(() => {
     if (!liveMode) return;
     let active = true;
     const load = async () => {
+      const revision = messageRevisionRef.current;
       try {
         const response = await fetch(
           `/api/conversations/${conversation.lineUserId}/messages`,
         );
         if (!response.ok) throw new Error("Unable to load messages");
         const data = (await response.json()) as { messages: ChatMessage[] };
-        if (active) {
+        if (
+          active &&
+          pendingSendsRef.current === 0 &&
+          messageRevisionRef.current === revision
+        ) {
           setMessages(data.messages);
           setLoadError(false);
           setLoading(false);
@@ -86,6 +93,10 @@ export function ChatWorkspace({
     const text = draft.trim();
     if (!text) return;
     const optimisticId = `local-${crypto.randomUUID()}`;
+    if (liveMode) {
+      pendingSendsRef.current += 1;
+      messageRevisionRef.current += 1;
+    }
     const optimistic: ChatMessage = {
       id: optimisticId,
       direction: "outbound",
@@ -135,6 +146,9 @@ export function ChatWorkspace({
             : item,
         ),
       );
+    } finally {
+      pendingSendsRef.current -= 1;
+      messageRevisionRef.current += 1;
     }
   }
 
